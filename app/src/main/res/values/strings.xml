@@ -7,4 +7,9 @@
     <string name="yourscore">Your Score</string>
     <string name="reset">Reset</string>
     <string name="share">Share</string>
+    <string name="weight_error">The weight is required</string>
+    <string name="height_error">The height is required</string>
+    <string name="bmi_status_under">Your weight is under ideal</string>
+    <string name="bmi_status_ideal">Your weight is ideal</string>
+    <string name="bmi_status_more">Your weight is more than ideal</string>
 </resources>

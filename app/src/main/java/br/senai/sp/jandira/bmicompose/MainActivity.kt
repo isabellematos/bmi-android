@@ -8,15 +8,21 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Healing
 import androidx.compose.material.icons.filled.VapeFree
 import androidx.compose.material.icons.rounded.Email
+import androidx.compose.material.icons.rounded.Handshake
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,11 +32,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -38,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.senai.sp.jandira.bmicompose.ui.theme.BMIComposeTheme
 import br.senai.sp.jandira.bmicompose.utils.bmiCalculate
+import br.senai.sp.jandira.bmicompose.utils.getColor
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -126,29 +136,44 @@ fun BMICalculator() {
             OutlinedTextField(
                 value = weightState,
                 onValueChange = { newWeight ->
-                    var lastChar = if (newWeight.length == 0)
+                    var lastChar = if (newWeight.length == 0) {
+                        isWeightError = true
                         newWeight
-                    else
+                    } else {
                         newWeight.get(newWeight.length - 1)
+                        isWeightError = false
+                    }
+
                     var newValue = if (lastChar == '.' || lastChar == ',')
-                        newWeight.dropLast(1) else newWeight
+                        newWeight.dropLast(1)
+                    else newWeight
                     weightState = newValue
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(weightFocusRequester),
-                leadingIcon = {
-                    Icon(imageVector = Icons.Filled.VapeFree, contentDescription = "")
-                },
+
                 trailingIcon = {
-                    Icon(imageVector = Icons.Rounded.Warning, contentDescription = "")
+                    if (isWeightError)Icon(imageVector = Icons.Rounded.Warning, contentDescription = "")
                 },
+
                 isError = isWeightError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp)
             )
+
+
             Spacer(modifier = Modifier.height(24.dp))
+
+            if (isWeightError) {
+                Text(
+                    text = stringResource(id = R.string.weight_error),
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.Red,
+                    textAlign = TextAlign.End
+                )
+            }
 
             Text(
                 text = stringResource(id = R.string.height),
@@ -158,10 +183,13 @@ fun BMICalculator() {
             OutlinedTextField(
                 value = heightState,
                 onValueChange = { newHeight ->
-                    var lastChar = if (newHeight.length == 0)
+                    var lastChar = if (newHeight.length == 0) {
+                        isHeightError = true
                         newHeight
-                    else
+                    } else {
                         newHeight.get(newHeight.length - 1)
+                        isHeightError = false
+                    }
                     var newValue = if (lastChar == '.' || lastChar == ',')
                         newHeight.dropLast(1)
                     else
@@ -170,11 +198,24 @@ fun BMICalculator() {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                trailingIcon = {
+                    if (isHeightError)Icon(imageVector = Icons.Rounded.Warning, contentDescription = "")
+                },
                 isError = isHeightError,
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp)
 
             )
+
+
+            if (isHeightError) {
+                Text(
+                    text = stringResource(id = R.string.height_error),
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color.Red,
+                    textAlign = TextAlign.End
+                )
+            }
             Button(
                 onClick = {
                     isWeightError = weightState.length == 0
@@ -247,7 +288,8 @@ fun BMICalculator() {
                     .fillMaxWidth()
                     .fillMaxHeight(1f),
                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                backgroundColor = MaterialTheme.colors.primary
+                backgroundColor = getColor(bmiScoreState)
+
             ) {
                 Column(
                     modifier = Modifier
@@ -271,7 +313,7 @@ fun BMICalculator() {
                         modifier = Modifier.fillMaxWidth(),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                     Row() {
                         Button(
